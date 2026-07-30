@@ -7,7 +7,7 @@ CREATE TABLE todoapp.users (
     phone_number    VARCHAR(15)             CHECK( 
         phone_number ~ '^\+[0-9]+$' 
         AND
-        char_length(full_name) BETWEEN 10 AND 15
+        char_length(phone_number) BETWEEN 10 AND 15
         )
 );
 
