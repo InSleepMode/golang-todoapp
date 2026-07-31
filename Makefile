@@ -10,24 +10,32 @@ env-down:
 	docker compose down todoapp-postgres
 
 env-cleanup:
-	@echo "Stopping container..."
-	docker compose down todoapp-postgres
-	@echo "Deleting pgdata..."
-	rmdir /s /q out\pgdata
-	@echo "Cleanup done!"
+	@read -p "Очистить все volume файлы окружения? Опасность утери данных. [y/N]: " ans; \
+	if [ "$$ans" = "y" ]; then \
+		docker compose down todoapp-postgres port-forwarder && \
+		rm -rf $(CURDIR)/out/pgdata && \
+		echo "Файлы окружения очищены"; \
+	else \
+		echo "Очистка окружения отменена"; \
+	fi
+
+
+env-port-forward:
+	@docker compose up -d port-forwarder
+
+env-port-close:
+	@docker compose down port-forwarder
 
 migrate-create:
-	@if "$(seq)"=="" ( \
-		echo "Отсутствует параметр 'seq'. Пример: make migrate-create seq=init" \
-	) else ( \
+	@if [ -z "$(seq)" ]; then \
+		echo "Отсутствует параметр 'seq'. Пример: make migrate-create seq=init"; \
+	else \
 		docker compose run --rm todoapp-postgres-migrate \
 			create \
 			-ext sql \
 			-dir /migrations \
-			-seq "$(seq)" \
-	)
-
-
+			-seq "$(seq)"; \
+	fi
 
 migrate-up:
 	docker compose run --rm todoapp-postgres-migrate \
@@ -41,15 +49,14 @@ migrate-down:
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@todoapp-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		down
 
-
 migrate-force:
 	docker compose run --rm todoapp-postgres-migrate \
 		-path /migrations \
 		-database postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@todoapp-postgres:5432/${POSTGRES_DB}?sslmode=disable \
 		force $(version)
 
-env-port-forward:
-	@docker compose up -d port-forwarder
-
-env-port-close:
-	@docker compose down port-forwarder
+todoapp-run:
+	@export LOGGER_FOLDER=$(CURDIR)/out/logs && \
+	export POSTGRES_HOST=localhost && \
+	go mod tidy && \
+	go run $(CURDIR)/cmd/todoapp/main.go

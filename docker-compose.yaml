@@ -10,6 +10,7 @@ services:
       - ./out/pgdata:/var/lib/postgresql/data
     restart: always
 
+
   todoapp-postgres-migrate:
     image: migrate/migrate:v4.19.1
     volumes: 
@@ -20,5 +21,5 @@ services:
     container_name: todoapp-postgres-port-forwarder
     command: tcp-listen:5432,fork,reuseaddr tcp-connect:todoapp-postgres:5432  
     ports:
-    - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5432:5432"
 
