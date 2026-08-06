@@ -71,3 +71,13 @@ todoapp-run:
 	export POSTGRES_HOST=localhost && \
 	go mod tidy && \
 	go run $(CURDIR)/cmd/todoapp/main.go
+
+todoapp-deploy:
+	@docker compose up -d --build todoapp
+
+todoapp-undeploy:
+	@docker compose down todoapp
+
+
+ps:
+	@docker compose ps
