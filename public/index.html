@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo</title>
+<style>
+/* ==========================================================================
+   Todo — design system
+   Dark espresso sidebar + warm cream workspace, icon-driven navigation.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --espresso-900: #241A14;
+  --espresso-800: #2F231C;
+  --espresso-700: #493A2C;
+
+  --cream-100: #F5EFE4;
+  --cream-card: #FFFFFF;
+  --tan-200: #EAE0CE;
+  --tan-300: #DDCFB4;
+
+  --ink-900: #2B2018;
+  --ink-600: #6B5C4D;
+  --ink-400: #9C8F7E;
+
+  --sidebar-text: #E8DDCB;
+  --sidebar-text-dim: #9C8770;
+
+  --caramel-400: #E0935B;
+  --caramel-600: #BD6F35;
+  --caramel-700: #9C5A29;
+  --caramel-100: rgba(189, 111, 53, 0.12);
+
+  --done-600: #4B7A5A;
+  --done-100: rgba(75, 122, 90, 0.12);
+  --pending-600: #B8792E;
+  --pending-100: rgba(184, 121, 46, 0.12);
+  --danger-600: #A8503D;
+  --danger-100: rgba(168, 80, 61, 0.10);
+
+  --font-ui: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius-sm: 7px;
+  --radius: 11px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(43, 32, 24, 0.06);
+  --shadow-md: 0 1px 3px rgba(43, 32, 24, 0.06), 0 6px 18px rgba(43, 32, 24, 0.08);
+  --shadow-lg: 0 12px 32px rgba(43, 32, 24, 0.16);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--cream-100);
+  color: var(--ink-900);
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--caramel-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+svg { display: block; }
+
+/* ==========================================================================
+   Shell layout: sidebar + content
+   ========================================================================== */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 232px;
+  flex-shrink: 0;
+  background: var(--espresso-900);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* subtle coffee-ring watermark, decorative only */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  width: 220px; height: 220px;
+  border: 22px solid rgba(224, 147, 91, 0.05);
+  border-radius: 50%;
+  bottom: -90px;
+  left: -70px;
+  pointer-events: none;
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 20px;
+}
+
+.brand__mark {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--caramel-600);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--espresso-900);
+  flex-shrink: 0;
+}
+
+.brand__mark svg { width: 18px; height: 18px; }
+
+.brand__name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--sidebar-text);
+  letter-spacing: -0.01em;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.navitem {
+  appearance: none;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--sidebar-text-dim);
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.navitem__icon {
+  width: 19px; height: 19px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.navitem__icon svg { width: 100%; height: 100%; }
+
+.navitem:hover {
+  background: var(--espresso-800);
+  color: var(--sidebar-text);
+}
+
+.navitem[aria-selected="true"] {
+  background: var(--espresso-800);
+  color: var(--sidebar-text);
+}
+
+.navitem[aria-selected="true"] .navitem__icon {
+  color: var(--caramel-400);
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: 10px 12px 4px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--sidebar-text-dim);
+  letter-spacing: 0.03em;
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================================================
+   Content
+   ========================================================================== */
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 34px 40px 60px;
+  max-width: 860px;
+}
+
+.content__header {
+  margin-bottom: 24px;
+}
+
+.content__title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin: 0 0 4px;
+}
+
+.content__subtitle {
+  font-size: 13.5px;
+  color: var(--ink-600);
+}
+
+.panel { display: none; animation: fade-up 0.25s ease both; }
+.panel.is-active { display: block; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   Cards / forms
+   ========================================================================== */
+
+.card {
+  background: var(--cream-card);
+  border: 1px solid var(--tan-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+  margin-bottom: 20px;
+}
+
+.card__title {
+  font-size: 14.5px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-900);
+}
+
+.card__title .icon { width: 16px; height: 16px; color: var(--caramel-600); }
+
+.form-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 160px;
+}
+
+.field--wide { flex: 2 1 240px; }
+
+.field label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-600);
+}
+
+.field input, .field select, .field textarea {
+  font-family: var(--font-ui);
+  font-size: 13.5px;
+  padding: 9px 11px;
+  border: 1px solid var(--tan-300);
+  border-radius: var(--radius-sm);
+  background: var(--cream-100);
+  color: var(--ink-900);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--caramel-600);
+  box-shadow: 0 0 0 3px var(--caramel-100);
+}
+
+.field textarea { resize: vertical; min-height: 42px; }
+.field input::placeholder, .field textarea::placeholder { color: var(--ink-400); }
+
+.field-error { font-size: 11.5px; color: var(--danger-600); min-height: 14px; }
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.btn {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--caramel-600);
+  color: #fff;
+  transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn svg { width: 15px; height: 15px; }
+
+.btn:hover { background: var(--caramel-700); box-shadow: var(--shadow-sm); }
+.btn:active { transform: translateY(1px); }
+
+.btn--ghost {
+  background: transparent;
+  color: var(--ink-600);
+  border: 1px solid var(--tan-300);
+}
+.btn--ghost:hover { background: var(--cream-100); color: var(--ink-900); }
+
+.btn[disabled] { opacity: 0.5; cursor: default; pointer-events: none; }
+
+/* Compact icon-only buttons for row actions */
+.icon-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 30px; height: 30px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-600);
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.icon-btn svg { width: 15.5px; height: 15.5px; }
+
+.icon-btn:hover { background: var(--cream-100); border-color: var(--tan-300); color: var(--ink-900); }
+.icon-btn--danger:hover { background: var(--danger-100); color: var(--danger-600); }
+.icon-btn--accent:hover { background: var(--caramel-100); color: var(--caramel-700); }
+
+/* ==========================================================================
+   List rows
+   ========================================================================== */
+
+.list { border-top: 1px solid var(--tan-200); }
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 2px;
+  border-bottom: 1px solid var(--tan-200);
+}
+
+.row__body { min-width: 0; }
+
+.row__title {
+  font-weight: 600;
+  font-size: 13.5px;
+  margin: 0 0 2px;
+  overflow-wrap: anywhere;
+}
+
+.row__title.is-done { text-decoration: line-through; color: var(--ink-400); font-weight: 500; }
+
+.row__sub {
+  font-size: 12px;
+  color: var(--ink-600);
+  overflow-wrap: anywhere;
+}
+
+.row__actions { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* Status badge — soft pill, not a stamp */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 5px 10px 5px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge--done { color: var(--done-600); background: var(--done-100); }
+.badge--pending { color: var(--pending-600); background: var(--pending-100); }
+
+/* ==========================================================================
+   Expandable detail card (GET /{id})
+   ========================================================================== */
+
+.detail {
+  margin: 0 2px 12px;
+  padding: 12px 16px;
+  background: var(--cream-100);
+  border: 1px dashed var(--tan-300);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  animation: fade-up 0.2s ease both;
+}
+
+.detail__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.detail__row span:first-child {
+  color: var(--ink-600);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 10px;
+}
+
+.detail__fetched {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--tan-300);
+  font-size: 10px;
+  color: var(--caramel-700);
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   Empty state
+   ========================================================================== */
+
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--ink-600);
+}
+
+.empty__icon {
+  width: 40px; height: 40px;
+  margin: 0 auto 14px;
+  color: var(--tan-300);
+}
+
+.empty__title { font-size: 14.5px; font-weight: 600; color: var(--ink-900); margin: 0 0 4px; }
+.empty__hint { font-size: 12.5px; }
+
+/* ==========================================================================
+   Statistics
+   ========================================================================== */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.stat {
+  background: var(--cream-card);
+  border: 1px solid var(--tan-200);
+  border-radius: var(--radius-lg);
+  padding: 18px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat__value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 8px;
+  color: var(--ink-900);
+}
+
+.stat--accent .stat__value { color: var(--done-600); }
+
+.stat__label {
+  font-size: 11.5px;
+  color: var(--ink-600);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Toaster
+   ========================================================================== */
+
+.toaster {
+  position: fixed;
+  bottom: 18px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 100;
+  width: min(92vw, 420px);
+}
+
+.toast {
+  font-size: 13px; font-weight: 500;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  color: #fff;
+  background: var(--ink-900);
+  animation: toast-in 0.2s ease both;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.toast--error { background: var(--danger-600); }
+.toast--ok { background: var(--done-600); }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.loading {
+  padding: 30px; text-align: center;
+  color: var(--ink-400);
+  font-family: var(--font-mono);
+  font-size: 11.5px; letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   Responsive: sidebar becomes a bottom tab bar
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 10px;
+    order: 2;
+    position: sticky;
+    bottom: 0;
+    border-top: 1px solid var(--espresso-700);
+  }
+
+  .sidebar::after { display: none; }
+  .sidebar__brand { display: none; }
+  .sidebar__footer { display: none; }
+
+  .sidebar__nav {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .navitem { flex-direction: column; gap: 4px; font-size: 10.5px; padding: 7px 10px; }
+
+  .content { order: 1; padding: 22px 16px 30px; }
+  .row { grid-template-columns: 1fr; }
+  .row__actions { justify-content: flex-start; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sidebar__brand">
+      <span class="brand__mark" id="icon-brand"></span>
+      <span class="brand__name">Todo</span>
+    </div>
+
+    <nav class="sidebar__nav" role="tablist" aria-label="Sections">
+      <button class="navitem" role="tab" data-tab="tasks" aria-selected="true">
+        <span class="navitem__icon" id="icon-nav-tasks"></span>
+        <span>Tasks</span>
+      </button>
+      <button class="navitem" role="tab" data-tab="users">
+        <span class="navitem__icon" id="icon-nav-users"></span>
+        <span>People</span>
+      </button>
+      <button class="navitem" role="tab" data-tab="stats">
+        <span class="navitem__icon" id="icon-nav-stats"></span>
+        <span>Statistics</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__footer">API v1.0</div>
+  </aside>
+
+  <main class="content">
+
+    <!-- ================= TASKS ================= -->
+    <section class="panel is-active" id="panel-tasks">
+      <div class="content__header">
+        <h1 class="content__title">Tasks</h1>
+        <p class="content__subtitle">Track work and mark it done</p>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title"><span class="icon" id="icon-plus-1"></span>New task</h2>
+        <form id="task-form" novalidate>
+          <div class="form-row">
+            <div class="field field--wide">
+              <label for="task-title">Title</label>
+              <input type="text" id="task-title" placeholder="e.g. Submit report" maxlength="100" required>
+              <div class="field-error" data-error-for="task-title"></div>
+            </div>
+            <div class="field">
+              <label for="task-author">Assignee</label>
+              <select id="task-author" required></select>
+              <div class="field-error" data-error-for="task-author"></div>
+            </div>
+          </div>
+          <div class="form-row" style="margin-top: 10px;">
+            <div class="field field--wide">
+              <label for="task-description">Description (optional)</label>
+              <textarea id="task-description" placeholder="Task details..." maxlength="1000"></textarea>
+            </div>
+            <button type="submit" class="btn"><span class="icon" id="icon-plus-2"></span>Add task</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" style="padding-bottom: 4px;">
+        <h2 class="card__title"><span class="icon" id="icon-list-1"></span>All tasks</h2>
+        <div class="list" id="tasks-list">
+          <div class="loading">loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PEOPLE ================= -->
+    <section class="panel" id="panel-users">
+      <div class="content__header">
+        <h1 class="content__title">People</h1>
+        <p class="content__subtitle">Everyone who can be assigned a task</p>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title"><span class="icon" id="icon-plus-3"></span>New person</h2>
+        <form id="user-form" novalidate>
+          <div class="form-row">
+            <div class="field field--wide">
+              <label for="user-name">Full name</label>
+              <input type="text" id="user-name" placeholder="Ivan Ivanov" maxlength="100" required>
+              <div class="field-error" data-error-for="user-name"></div>
+            </div>
+            <div class="field">
+              <label for="user-phone">Phone (optional)</label>
+              <input type="text" id="user-phone" placeholder="+79998887766">
+              <div class="field-error" data-error-for="user-phone"></div>
+            </div>
+            <button type="submit" class="btn"><span class="icon" id="icon-plus-4"></span>Add person</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" style="padding-bottom: 4px;">
+        <h2 class="card__title"><span class="icon" id="icon-users-1"></span>All people</h2>
+        <div class="list" id="users-list">
+          <div class="loading">loading…</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= STATISTICS ================= -->
+    <section class="panel" id="panel-stats">
+      <div class="content__header">
+        <h1 class="content__title">Statistics</h1>
+        <p class="content__subtitle">See how work is progressing</p>
+      </div>
+
+      <div class="card">
+        <h2 class="card__title"><span class="icon" id="icon-filter"></span>Filters</h2>
+        <form id="stats-form" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="stats-user">Person</label>
+              <select id="stats-user"><option value="">All</option></select>
+            </div>
+            <div class="field">
+              <label for="stats-from">From</label>
+              <input type="date" id="stats-from">
+            </div>
+            <div class="field">
+              <label for="stats-to">To</label>
+              <input type="date" id="stats-to">
+            </div>
+            <button type="submit" class="btn">Apply</button>
+            <button type="button" class="btn btn--ghost" id="stats-reset">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="stats-output">
+        <div class="loading">loading…</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toaster" id="toaster"></div>
+
+<script>
+/* ==========================================================================
+   Todo — app logic
+   Vanilla JS, fetch-based. Served from the same Go server as /api/v1,
+   so there is no CORS to deal with.
+   ========================================================================== */
+
+const API_BASE = "/api/v1";
+
+const state = {
+  users: [],
+  usersById: {},
+  tasks: [],
+};
+
+/* ==========================================================================
+   Icon set — small stroke-based SVGs, no external dependency
+   ========================================================================== */
+
+const ICONS = {
+  brand: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6l1.5 1.5L8 5"/><path d="M4 12l1.5 1.5L8 11"/><path d="M4 18l1.5 1.5L8 17"/></svg>`,
+  tasks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6l1.5 1.5L8 5"/><path d="M4 12l1.5 1.5L8 11"/><path d="M4 18l1.5 1.5L8 17"/></svg>`,
+  users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M17 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  stats: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="13" width="3" height="5"/><rect x="12" y="9" width="3" height="9"/><rect x="17" y="5" width="3" height="13"/></svg>`,
+  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`,
+  filter: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3Z"/></svg>`,
+  chevron: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`,
+  edit: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>`,
+  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+  undo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>`,
+};
+
+function mountIcons() {
+  const map = {
+    "icon-brand": ICONS.brand,
+    "icon-nav-tasks": ICONS.tasks,
+    "icon-nav-users": ICONS.users,
+    "icon-nav-stats": ICONS.stats,
+    "icon-plus-1": ICONS.plus, "icon-plus-2": ICONS.plus,
+    "icon-plus-3": ICONS.plus, "icon-plus-4": ICONS.plus,
+    "icon-list-1": ICONS.tasks,
+    "icon-users-1": ICONS.users,
+    "icon-filter": ICONS.filter,
+  };
+  for (const [id, svg] of Object.entries(map)) {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = svg;
+  }
+}
+
+/* ==========================================================================
+   Helpers
+   ========================================================================== */
+
+function qs(selector, scope = document) {
+  return scope.querySelector(selector);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str ?? "";
+  return div.innerHTML;
+}
+
+function toast(message, type = "ok") {
+  const toaster = qs("#toaster");
+  const el = document.createElement("div");
+  el.className = `toast toast--${type}`;
+  el.textContent = message;
+  toaster.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API_BASE + path, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+  });
+
+  if (res.status === 204) return null;
+
+  let data = null;
+  try { data = await res.json(); } catch (_) {}
+
+  if (!res.ok) {
+    const message = (data && (data.message || data.error)) || `Error ${res.status}`;
+    throw new Error(message);
+  }
+  return data;
+}
+
+/* ==========================================================================
+   Navigation
+   ========================================================================== */
+
+function initNav() {
+  const items = document.querySelectorAll(".navitem");
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      items.forEach((i) => i.setAttribute("aria-selected", "false"));
+      item.setAttribute("aria-selected", "true");
+      document.querySelectorAll(".panel").forEach((p) => p.classList.remove("is-active"));
+      qs(`#panel-${item.dataset.tab}`).classList.add("is-active");
+    });
+  });
+}
+
+/* ==========================================================================
+   People
+   ========================================================================== */
+
+async function loadUsers() {
+  const list = await apiFetch("/users?limit=100&offset=0");
+  state.users = list || [];
+  state.usersById = Object.fromEntries(state.users.map((u) => [u.id, u]));
+  renderUsers();
+  renderUserSelects();
+}
+
+function renderUsers() {
+  const container = qs("#users-list");
+
+  if (state.users.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <span class="empty__icon">${ICONS.users}</span>
+        <p class="empty__title">No one here yet</p>
+        <p class="empty__hint">Add the first person above</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = state.users.map((u) => `
+    <div class="row" data-user-id="${u.id}">
+      <div class="row__body">
+        <p class="row__title">${escapeHtml(u.full_name)}</p>
+        <p class="row__sub">${u.phone_number ? escapeHtml(u.phone_number) : "no phone number"}</p>
+      </div>
+      <span></span>
+      <div class="row__actions">
+        <button class="icon-btn" title="View details" data-action="view-user" data-id="${u.id}">${ICONS.chevron}</button>
+        <button class="icon-btn" title="Edit" data-action="edit-user" data-id="${u.id}">${ICONS.edit}</button>
+        <button class="icon-btn icon-btn--danger" title="Delete" data-action="delete-user" data-id="${u.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderUserSelects() {
+  const options = state.users
+    .map((u) => `<option value="${u.id}">${escapeHtml(u.full_name)}</option>`)
+    .join("");
+
+  const taskAuthor = qs("#task-author");
+  const prev = taskAuthor.value;
+  taskAuthor.innerHTML = options || `<option value="">Add a person first</option>`;
+  if (prev) taskAuthor.value = prev;
+
+  const statsUser = qs("#stats-user");
+  const prevStats = statsUser.value;
+  statsUser.innerHTML = `<option value="">All</option>` + options;
+  statsUser.value = prevStats;
+}
+
+async function createUser(event) {
+  event.preventDefault();
+  clearFieldErrors(event.target);
+
+  const fullName = qs("#user-name").value.trim();
+  const phoneRaw = qs("#user-phone").value.trim();
+
+  if (fullName.length < 3 || fullName.length > 100) {
+    showFieldError("user-name", "Between 3 and 100 characters");
+    return;
+  }
+  if (phoneRaw && !/^\+\d{9,14}$/.test(phoneRaw)) {
+    showFieldError("user-phone", "Format: + followed by 9–14 digits");
+    return;
+  }
+
+  try {
+    await apiFetch("/users", {
+      method: "POST",
+      body: JSON.stringify({ full_name: fullName, phone_number: phoneRaw || null }),
+    });
+    event.target.reset();
+    toast("Person added");
+    await loadUsers();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function deleteUser(id) {
+  if (!confirm("Delete this person?")) return;
+  try {
+    await apiFetch(`/users/${id}`, { method: "DELETE" });
+    toast("Deleted");
+    await loadUsers();
+    await loadTasks();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function toggleUserDetail(id) {
+  const entry = document.querySelector(`[data-user-id="${id}"]`);
+  const next = entry.nextElementSibling;
+
+  if (next && next.classList.contains("detail") && next.dataset.for === `user-${id}`) {
+    next.remove();
+    return;
+  }
+  document.querySelectorAll(".detail").forEach((el) => el.remove());
+
+  try {
+    const user = await apiFetch(`/users/${id}`);
+    const now = new Intl.DateTimeFormat("en-US", { timeStyle: "medium" }).format(new Date());
+
+    entry.insertAdjacentHTML("afterend", `
+      <div class="detail" data-for="user-${id}">
+        <div class="detail__row"><span>id</span><span>${user.id}</span></div>
+        <div class="detail__row"><span>version</span><span>${user.version}</span></div>
+        <div class="detail__row"><span>full_name</span><span>${escapeHtml(user.full_name)}</span></div>
+        <div class="detail__row"><span>phone_number</span><span>${user.phone_number ? escapeHtml(user.phone_number) : "—"}</span></div>
+        <div class="detail__fetched">GET /users/${id} · fetched ${now}</div>
+      </div>
+    `);
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+function editUserFields(id) {
+  const user = state.usersById[id];
+  if (!user) return;
+
+  document.querySelectorAll(".detail").forEach((el) => el.remove());
+
+  const entry = document.querySelector(`[data-user-id="${id}"]`);
+  const body = entry.querySelector(".row__body");
+  const original = { full_name: user.full_name, phone_number: user.phone_number || "" };
+
+  body.innerHTML = `
+    <input type="text" class="user-edit-name" value="${escapeHtml(original.full_name)}" maxlength="100"
+           style="font-family: var(--font-ui); font-size: 13.5px; padding: 6px 9px;
+                  border: 1px solid var(--tan-300); border-radius: 6px; width: 100%; margin-bottom: 5px;">
+    <input type="text" class="user-edit-phone" value="${escapeHtml(original.phone_number)}"
+           placeholder="phone (leave empty to remove)"
+           style="font-family: var(--font-ui); font-size: 12px; padding: 6px 9px;
+                  border: 1px solid var(--tan-300); border-radius: 6px; width: 100%;">
+  `;
+
+  const actions = entry.querySelector(".row__actions");
+  actions.innerHTML = `
+    <button class="icon-btn icon-btn--accent" title="Save" data-role="save-user">${ICONS.check}</button>
+    <button class="icon-btn" title="Cancel" data-role="cancel-user">${ICONS.undo}</button>
+  `;
+
+  actions.querySelector('[data-role="cancel-user"]').addEventListener("click", () => loadUsers());
+
+  actions.querySelector('[data-role="save-user"]').addEventListener("click", async () => {
+    const nameInput = entry.querySelector(".user-edit-name").value.trim();
+    const phoneInput = entry.querySelector(".user-edit-phone").value.trim();
+
+    if (nameInput.length < 3 || nameInput.length > 100) {
+      toast("Name must be 3–100 characters", "error");
+      return;
+    }
+
+    const patch = {};
+    if (nameInput !== original.full_name) patch.full_name = nameInput;
+    if (phoneInput !== original.phone_number) patch.phone_number = phoneInput || null;
+
+    if (Object.keys(patch).length === 0) {
+      await loadUsers();
+      return;
+    }
+
+    try {
+      await apiFetch(`/users/${id}`, { method: "PATCH", body: JSON.stringify(patch) });
+      toast("Changes saved");
+    } catch (err) {
+      toast(err.message, "error");
+    }
+    await loadUsers();
+  });
+}
+
+/* ==========================================================================
+   Tasks
+   ========================================================================== */
+
+async function loadTasks() {
+  const list = await apiFetch("/tasks?limit=100&offset=0");
+  state.tasks = list || [];
+  renderTasks();
+}
+
+function authorName(id) {
+  const user = state.usersById[id];
+  return user ? user.full_name : `person #${id}`;
+}
+
+function renderTasks() {
+  const container = qs("#tasks-list");
+
+  if (state.tasks.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <span class="empty__icon">${ICONS.tasks}</span>
+        <p class="empty__title">No tasks yet</p>
+        <p class="empty__hint">Add your first task above</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = state.tasks.map((t) => `
+    <div class="row" data-task-id="${t.id}">
+      <div class="row__body">
+        <p class="row__title ${t.completed ? "is-done" : ""}" data-role="title">${escapeHtml(t.title)}</p>
+        <p class="row__sub">${escapeHtml(authorName(t.author_user_id))}${t.description ? " · " + escapeHtml(t.description) : ""}</p>
+      </div>
+      <span class="badge ${t.completed ? "badge--done" : "badge--pending"}">${t.completed ? "Done" : "In progress"}</span>
+      <div class="row__actions">
+        <button class="icon-btn" title="View details" data-action="view-task" data-id="${t.id}">${ICONS.chevron}</button>
+        <button class="icon-btn" title="Edit" data-action="edit-task" data-id="${t.id}">${ICONS.edit}</button>
+        <button class="icon-btn ${t.completed ? "" : "icon-btn--accent"}" title="${t.completed ? "Reopen" : "Mark done"}" data-action="toggle-task" data-id="${t.id}">${t.completed ? ICONS.undo : ICONS.check}</button>
+        <button class="icon-btn icon-btn--danger" title="Delete" data-action="delete-task" data-id="${t.id}">${ICONS.trash}</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function createTask(event) {
+  event.preventDefault();
+  clearFieldErrors(event.target);
+
+  const title = qs("#task-title").value.trim();
+  const authorId = qs("#task-author").value;
+  const description = qs("#task-description").value.trim();
+
+  if (title.length < 1 || title.length > 100) {
+    showFieldError("task-title", "Between 1 and 100 characters");
+    return;
+  }
+  if (!authorId) {
+    showFieldError("task-author", "Select an assignee");
+    return;
+  }
+
+  try {
+    await apiFetch("/tasks", {
+      method: "POST",
+      body: JSON.stringify({ title, description: description || null, author_user_id: Number(authorId) }),
+    });
+    event.target.reset();
+    toast("Task added");
+    await loadTasks();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function toggleTask(id) {
+  const task = state.tasks.find((t) => t.id === id);
+  if (!task) return;
+
+  try {
+    await apiFetch(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ completed: !task.completed }) });
+    await loadTasks();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function deleteTask(id) {
+  if (!confirm("Delete this task?")) return;
+  try {
+    await apiFetch(`/tasks/${id}`, { method: "DELETE" });
+    toast("Deleted");
+    await loadTasks();
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+async function toggleTaskDetail(id) {
+  const entry = document.querySelector(`[data-task-id="${id}"]`);
+  const next = entry.nextElementSibling;
+
+  if (next && next.classList.contains("detail") && next.dataset.for === `task-${id}`) {
+    next.remove();
+    return;
+  }
+  document.querySelectorAll(".detail").forEach((el) => el.remove());
+
+  const fmt = (iso) => iso
+    ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso))
+    : "—";
+
+  try {
+    const task = await apiFetch(`/tasks/${id}`);
+    const now = new Intl.DateTimeFormat("en-US", { timeStyle: "medium" }).format(new Date());
+
+    entry.insertAdjacentHTML("afterend", `
+      <div class="detail" data-for="task-${id}">
+        <div class="detail__row"><span>id</span><span>${task.id}</span></div>
+        <div class="detail__row"><span>version</span><span>${task.version}</span></div>
+        <div class="detail__row"><span>created</span><span>${fmt(task.created_at)}</span></div>
+        <div class="detail__row"><span>completed</span><span>${fmt(task.completed_at)}</span></div>
+        <div class="detail__fetched">GET /tasks/${id} · fetched ${now}</div>
+      </div>
+    `);
+  } catch (err) {
+    toast(err.message, "error");
+  }
+}
+
+function editTaskTitle(id) {
+  const task = state.tasks.find((t) => t.id === id);
+  if (!task) return;
+
+  document.querySelectorAll(".detail").forEach((el) => el.remove());
+
+  const row = document.querySelector(`[data-task-id="${id}"] [data-role="title"]`);
+  const original = task.title;
+
+  row.outerHTML = `
+    <span data-role="title" style="display:flex; gap:6px;">
+      <input type="text" value="${escapeHtml(original)}" maxlength="100"
+             class="edit-input" data-edit-id="${id}"
+             style="font-family: var(--font-ui); font-size: 13.5px; padding: 5px 9px;
+                    border: 1px solid var(--tan-300); border-radius: 6px; flex: 1;">
+    </span>`;
+
+  const input = document.querySelector(`.edit-input[data-edit-id="${id}"]`);
+  input.focus();
+  input.select();
+
+  let settled = false;
+
+  const save = async () => {
+    if (settled) return;
+    settled = true;
+
+    const newTitle = input.value.trim();
+    if (newTitle && newTitle !== original) {
+      try {
+        await apiFetch(`/tasks/${id}`, { method: "PATCH", body: JSON.stringify({ title: newTitle }) });
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+    await loadTasks();
+  };
+
+  const cancel = () => {
+    if (settled) return;
+    settled = true;
+    loadTasks();
+  };
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") save();
+    if (e.key === "Escape") cancel();
+  });
+  input.addEventListener("blur", save);
+}
+
+/* ==========================================================================
+   Statistics
+   ========================================================================== */
+
+async function loadStats(event) {
+  if (event) event.preventDefault();
+
+  const userId = qs("#stats-user").value;
+  const from = qs("#stats-from").value;
+  const to = qs("#stats-to").value;
+
+  const params = new URLSearchParams();
+  if (userId) params.set("user_id", userId);
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+
+  const output = qs("#stats-output");
+  output.innerHTML = `<div class="loading">loading…</div>`;
+
+  try {
+    const data = await apiFetch(`/statistics?${params.toString()}`);
+    renderStats(data);
+  } catch (err) {
+    output.innerHTML = "";
+    toast(err.message, "error");
+  }
+}
+
+function renderStats(s) {
+  const rate = s.tasks_completed_rate != null ? `${Math.round(s.tasks_completed_rate)}%` : "—";
+  const avg = s.tasks_average_completion_time || "—";
+
+  qs("#stats-output").innerHTML = `
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat__value">${s.tasks_created}</div>
+        <div class="stat__label">Tasks created</div>
+      </div>
+      <div class="stat stat--accent">
+        <div class="stat__value">${s.tasks_completed}</div>
+        <div class="stat__label">Completed</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value">${rate}</div>
+        <div class="stat__label">Completion rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat__value" style="font-size: 19px;">${escapeHtml(avg)}</div>
+        <div class="stat__label">Avg. completion time</div>
+      </div>
+    </div>`;
+}
+
+/* ==========================================================================
+   Form field errors
+   ========================================================================== */
+
+function showFieldError(fieldId, message) {
+  const el = document.querySelector(`[data-error-for="${fieldId}"]`);
+  if (el) el.textContent = message;
+}
+
+function clearFieldErrors(form) {
+  form.querySelectorAll(".field-error").forEach((el) => (el.textContent = ""));
+}
+
+/* ==========================================================================
+   Click delegation for row actions
+   ========================================================================== */
+
+function initListActions() {
+  document.body.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    const id = Number(btn.dataset.id);
+
+    switch (btn.dataset.action) {
+      case "delete-user": deleteUser(id); break;
+      case "delete-task": deleteTask(id); break;
+      case "toggle-task": toggleTask(id); break;
+      case "edit-task": editTaskTitle(id); break;
+      case "view-user": toggleUserDetail(id); break;
+      case "edit-user": editUserFields(id); break;
+      case "view-task": toggleTaskDetail(id); break;
+    }
+  });
+}
+
+/* ==========================================================================
+   Boot
+   ========================================================================== */
+
+async function init() {
+  mountIcons();
+  initNav();
+  initListActions();
+
+  qs("#user-form").addEventListener("submit", createUser);
+  qs("#task-form").addEventListener("submit", createTask);
+  qs("#stats-form").addEventListener("submit", loadStats);
+  qs("#stats-reset").addEventListener("click", () => {
+    qs("#stats-form").reset();
+    loadStats();
+  });
+
+  try {
+    await loadUsers();
+    await loadTasks();
+    await loadStats();
+  } catch (err) {
+    toast("Failed to load data: " + err.message, "error");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", init);
+
+</script>
+</body>
+</html>
